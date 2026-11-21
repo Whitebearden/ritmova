@@ -30,7 +30,7 @@
   #uygulama { display:none; position:fixed; inset:0; padding-top:env(safe-area-inset-top); background:#0f0b1a; }
   #uygulama iframe { width:100%; height:100%; border:0; display:block; }
   #yukleniyor { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#b9b3c9; }
-  #cikis { position:fixed; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); z-index:5; font-size:12px;
+  #cikis { position:fixed; left:50%; transform:translateX(-50%); top:calc(6px + env(safe-area-inset-top)); z-index:5; font-size:12px; transition:opacity .6s;
     padding:6px 10px; border-radius:10px; background:rgba(0,0,0,.45); color:#ddd; border:0; width:auto; display:none; }
   #kurulum { display:none; font-size:14px; color:#b9b3c9; max-width:300px; line-height:1.5;
     background:#1b1528; padding:14px; border-radius:14px; }
@@ -51,7 +51,7 @@
 
 <script>
   // Panelin mobil dağıtım adresi (şifre burada DEĞİL; şifre sadece telefonda saklanır)
-  var PANEL_ADRESI = "https://script.google.com/macros/s/AKfycbwYv3q8-ygXCPkILn7asMwDCusnlcKENWCC2Gx0M-Tb07RTIVlyn1Mc1KxaZCf4PQD6/exec";
+  var PANEL_ADRESI = "BURAYA_EXEC_ADRESI";
 
   var bagimsiz = window.navigator.standalone === true ||
                  window.matchMedia("(display-mode: standalone)").matches;
@@ -67,7 +67,8 @@
     document.getElementById("giris").style.display = "none";
     var kap = document.getElementById("uygulama");
     kap.style.display = "block";
-    document.getElementById("cikis").style.display = "block";
+    var c = document.getElementById("cikis"); c.style.display = "block"; c.style.opacity = "1";
+    setTimeout(function(){ c.style.opacity = "0"; setTimeout(function(){ c.style.display = "none"; }, 700); }, 15000);
     var f = document.createElement("iframe");
     f.src = PANEL_ADRESI + "?k=" + encodeURIComponent(pin) + "&m=1";
     f.onload = function () { var y = document.getElementById("yukleniyor"); if (y) y.remove(); };
