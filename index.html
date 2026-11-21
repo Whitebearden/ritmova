@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ritmova</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ritmova">
+<meta name="theme-color" content="#7c3aed">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<style>
+  :root { --mor:#7c3aed; --pembe:#ec4899; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { height:100%; background:#0f0b1a; color:#fff;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  #giris { min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px; padding-top:calc(24px + env(safe-area-inset-top)); gap:18px; text-align:center; }
+  #giris img { width:84px; height:84px; border-radius:20px; }
+  h1 { font-size:26px; font-weight:700; }
+  p.alt { color:#b9b3c9; font-size:15px; }
+  input { width:100%; max-width:280px; font-size:24px; letter-spacing:6px; text-align:center;
+    padding:14px; border-radius:14px; border:1px solid #3a3150; background:#1b1528; color:#fff; outline:none; }
+  input:focus { border-color:var(--mor); }
+  button { width:100%; max-width:280px; font-size:17px; font-weight:600; padding:14px; border:0; border-radius:14px;
+    color:#fff; background:linear-gradient(135deg,var(--mor),var(--pembe)); }
+  #hata { color:#fca5a5; font-size:14px; min-height:18px; }
+  #uygulama { display:none; position:fixed; inset:0; padding-top:env(safe-area-inset-top); background:#0f0b1a; }
+  #uygulama iframe { width:100%; height:100%; border:0; display:block; }
+  #yukleniyor { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#b9b3c9; }
+  #cikis { position:fixed; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); z-index:5; font-size:12px;
+    padding:6px 10px; border-radius:10px; background:rgba(0,0,0,.45); color:#ddd; border:0; width:auto; display:none; }
+  #kurulum { display:none; font-size:14px; color:#b9b3c9; max-width:300px; line-height:1.5;
+    background:#1b1528; padding:14px; border-radius:14px; }
+</style>
+</head>
+<body>
+<div id="giris">
+  <img src="apple-touch-icon.png" alt="">
+  <h1>Ritmova Yönetim</h1>
+  <p class="alt">Giriş şifrenizi girin</p>
+  <input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••••">
+  <button id="gir">Giriş</button>
+  <div id="hata"></div>
+  <div id="kurulum">Uygulama gibi kullanmak için: alttaki <b>Paylaş</b> simgesine dokunun → <b>Ana Ekrana Ekle</b>.</div>
+</div>
+<div id="uygulama"><div id="yukleniyor">Yükleniyor…</div></div>
+<button id="cikis">Çıkış</button>
+
+<script>
+  // Panelin mobil dağıtım adresi (şifre burada DEĞİL; şifre sadece telefonda saklanır)
+  var PANEL_ADRESI = "BURAYA_EXEC_ADRESI";
+
+  var bagimsiz = window.navigator.standalone === true ||
+                 window.matchMedia("(display-mode: standalone)").matches;
+  if (!bagimsiz && /iPhone|iPad/.test(navigator.userAgent)) {
+    document.getElementById("kurulum").style.display = "block";
+  }
+
+  function kayitliPin() { try { return localStorage.getItem("ritmova_pin"); } catch (e) { return null; } }
+  function pinKaydet(p) { try { localStorage.setItem("ritmova_pin", p); } catch (e) {} }
+  function pinSil() { try { localStorage.removeItem("ritmova_pin"); } catch (e) {} }
+
+  function ac(pin) {
+    document.getElementById("giris").style.display = "none";
+    var kap = document.getElementById("uygulama");
+    kap.style.display = "block";
+    document.getElementById("cikis").style.display = "block";
+    var f = document.createElement("iframe");
+    f.src = PANEL_ADRESI + "?k=" + encodeURIComponent(pin) + "&m=1";
+    f.onload = function () { var y = document.getElementById("yukleniyor"); if (y) y.remove(); };
+    kap.appendChild(f);
+  }
+
+  document.getElementById("gir").onclick = function () {
+    var p = document.getElementById("pin").value.trim();
+    if (p.length < 4) { document.getElementById("hata").textContent = "Şifre en az 4 haneli olmalı."; return; }
+    pinKaydet(p); ac(p);
+  };
+  document.getElementById("pin").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") document.getElementById("gir").click();
+  });
+  document.getElementById("cikis").onclick = function () {
+    if (confirm("Bu telefonda çıkış yapılsın mı? Tekrar girişte şifre sorulur.")) { pinSil(); location.reload(); }
+  };
+
+  var p = kayitliPin();
+  if (p) ac(p);
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function(){});
+</script>
+</body>
+</html>
